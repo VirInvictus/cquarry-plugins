@@ -2,6 +2,17 @@
 
 # Patchnotes
 
+## v0.4.2
+
+CARRIERS: v0.4.1 shipped with the root VERSION still reading 0.4.0 (the
+bump script updated pyproject and patchnotes but missed the VERSION file
+and pyproject), and the actions suite's version pin still asserted
+0.4.0 -- the version-sync gate caught both, and the release went out
+anyway, which is exactly the failure mode the gate exists to prevent.
+This release moves the carriers and the pin; no other code moved.
+
+# Patchnotes
+
 ## v0.4.1
 
 ERRATUM for v0.4.0, whose CI ran red after the tag: the merge verb's

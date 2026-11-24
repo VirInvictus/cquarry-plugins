@@ -397,7 +397,7 @@ class TestActions(unittest.TestCase):
     def test_host_verify_still_passes(self) -> None:
         report, manifest, _digest = verify(PLUGIN_DIR)
         self.assertTrue(report.ok, report.lines)
-        self.assertEqual(manifest.version, "0.4.0")
+        self.assertEqual(manifest.version, "0.4.1")
 
 
 if __name__ == "__main__":
