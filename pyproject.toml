@@ -1,0 +1,14 @@
+[project]
+name = "cquarry-plugins"
+version = "0.1.0"
+description = "GPL-3 plugins for the CalibreQuarry plugin system: 1:1 ports of kiwidude68's Quality Check, Extract ISBN, and Find Duplicates"
+requires-python = ">=3.14"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+
+# Not a built or installed package: the plugins are git-sourced directories the
+# CalibreQuarry plugin system loads by manifest (spec.md). This file carries
+# metadata and tool configuration only.
+
+[tool.ruff.lint]
+ignore = ["PLW1510", "BLE001", "DTZ011", "SIM118", "S110", "C401", "DTZ005", "SIM115"]

@@ -1,0 +1,25 @@
+# The CalibreQuarry plugin manifest contract; the field semantics live in the
+# repo spec.md and the host checks all three version gates fail-closed at
+# install, update, and load. Skeleton: the implementation lands in the Phase 1
+# port; the calibrequarry floor names the host release expected to carry the
+# plugin API and is re-pinned when that release cuts.
+
+schema = 1
+name = "extract_isbn"
+version = "0.1.0"
+api_version = 1
+license = "GPL-3.0-only"
+capabilities = ["read", "write"]
+entry = "extract_isbn.plugin:register"
+description = "Extract printed ISBNs from a book's own text and adopt them into the library metadata (a 1:1 port of kiwidude68's Extract ISBN)."
+
+[requires]
+cquarry = ">=1.29.2"       # verified against the current engine release
+calibrequarry = ">=3.94.0" # re-pin at the host API's release
+
+[upstream]
+source = "https://github.com/kiwidude68/calibre_plugins"
+plugin = "extract_isbn"
+version = "1.6.7"
+license = "GPL-3.0"
+derivation = "port"

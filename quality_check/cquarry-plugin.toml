@@ -1,0 +1,25 @@
+# The CalibreQuarry plugin manifest contract; the field semantics live in the
+# repo spec.md and the host checks all three version gates fail-closed at
+# install, update, and load. Skeleton: the implementation lands in the Phase 3
+# port; the calibrequarry floor names the host release expected to carry the
+# plugin API and is re-pinned when that release cuts.
+
+schema = 1
+name = "quality_check"
+version = "0.1.0"
+api_version = 1
+license = "GPL-3.0-only"
+capabilities = ["read", "write"]
+entry = "quality_check.plugin:register"
+description = "A battery of cover, ePub-structure, ePub-style, MOBI/AZW, and metadata-quality checks with gated fixes (a 1:1 port of kiwidude68's Quality Check)."
+
+[requires]
+cquarry = ">=1.29.2"       # verified against the current engine release
+calibrequarry = ">=3.94.0" # re-pin at the host API's release
+
+[upstream]
+source = "https://github.com/kiwidude68/calibre_plugins"
+plugin = "quality_check"
+version = "1.15.0"
+license = "GPL-3.0"
+derivation = "port"

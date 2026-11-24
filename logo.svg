@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120" role="img" aria-label="cquarry-plugins placeholder logo">
+  <!-- PLACEHOLDER logo: swap for real art before any public-facing use. -->
+  <rect x="2" y="2" width="236" height="116" rx="10" fill="#1f1f28" stroke="#7aa2f7" stroke-width="2"/>
+  <text x="120" y="52" text-anchor="middle" font-family="monospace" font-size="22" fill="#c0caf5">cquarry-plugins</text>
+  <text x="120" y="80" text-anchor="middle" font-family="monospace" font-size="12" fill="#9aa5ce">GPL-3 plugins for CalibreQuarry</text>
+</svg>
