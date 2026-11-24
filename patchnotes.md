@@ -2,6 +2,30 @@
 
 # Patchnotes
 
+## v0.3.0
+
+The find_duplicates port lands (Phase 2, the read half): the matcher
+ladder carried verbatim (identical / similar with the automerge strip /
+soundex with the adjustable per-field lengths / fuzzy with its aggressive
+reductions, the author reversal hashes, the ignore-word lists; the
+recorded tags-soundex length correction noted for the variations half),
+the three search types (title/author with the reversed-author hash,
+binary compare over the two-pass size-then-sha walk with an mtime-keyed
+sha cache in the plugin config, identifier exact-equality), the grouping
+pipeline with upstream's exemption partition (the don't-repartition
+subtlety ported with its comment), per-library exemptions stored in the
+plugin config under contract 2 (`exempt --books/--authors/--list/
+--remove/--clear`; upstream's library-database prefs is the recorded
+storage substitution, keyed by the absolute library path), the
+cross-library mode (`search --against PATH`, report-only, no exemptions),
+and the group report as text or `--format json` in upstream's export
+shape (the recorded replacement for the GUI's marked-book highlighting).
+Manifest: find_duplicates 0.3.0 on api_version 2, floor calibrequarry
+>=3.95.0. The actions half (merge, binary-format removal, row deletion,
+bulk rename, the variations reports) stays the recorded Phase 2 actions
+box.
+# Patchnotes
+
 ## v0.2.0
 
 The extract_isbn port lands (Phase 1): the scanner (upstream's regex, strip

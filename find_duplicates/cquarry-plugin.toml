@@ -6,16 +6,16 @@
 
 schema = 1
 name = "find_duplicates"
-version = "0.1.0"
-api_version = 1
+version = "0.3.0"
+api_version = 2
 license = "GPL-3.0-only"
 capabilities = ["read", "write"]
-entry = "find_duplicates.plugin:register"
+entry = "plugin:register"
 description = "Find duplicate books across the matcher ladder (identical/similar/soundex/fuzzy), byte-identical formats, and identifiers, with group reports and gated merge actions (a 1:1 port of kiwidude68's Find Duplicates)."
 
 [requires]
 cquarry = ">=1.29.2"       # verified against the current engine release
-calibrequarry = ">=3.94.0" # re-pin at the host API's release
+calibrequarry = ">=3.95.0" # contract 2 (the config seam)
 
 [upstream]
 source = "https://github.com/kiwidude68/calibre_plugins"
@@ -23,3 +23,6 @@ plugin = "find_duplicates"
 version = "1.10.11"
 license = "GPL-3.0"
 derivation = "port"
+
+[verify]
+probes = ["search --type identifier", "exempt --list"]

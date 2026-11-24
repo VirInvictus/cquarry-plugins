@@ -25,6 +25,13 @@ uses the library database's namespaced preferences.
 
 ## Status
 
-Skeleton. The manifest (`cquarry-plugin.toml`) is the live contract; the
-Phase 2 port lands the implementation. The parity ledger row lives in
-`docs/crosswalk.md` at the repository root.
+Implemented (Phase 2, the read half). Verbs: `search` (the three search
+types with the per-field matcher ladder carried verbatim; groups render
+as the report or `--format json` in upstream's export shape) and `exempt`
+(--books/--authors record not-duplicate sets per library in this plugin's
+config, --list/--remove/--clear manage them). Cross-library comparison:
+`search --against /path/to/other/metadata.db` (report-only, no
+exemptions, upstream's rule). The actions half (merge, binary-format
+removal, row deletion, bulk rename, the variations reports) is the
+recorded Phase 2 actions box; its roadmap row tracks it. The parity
+ledger rows live in `docs/crosswalk.md`.

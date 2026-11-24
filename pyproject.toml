@@ -1,6 +1,6 @@
 [project]
 name = "cquarry-plugins"
-version = "0.2.0"
+version = "0.3.0"
 description = "GPL-3 plugins for the CalibreQuarry plugin system: 1:1 ports of kiwidude68's Quality Check, Extract ISBN, and Find Duplicates"
 requires-python = ">=3.14"
 license = "GPL-3.0-only"

@@ -1,6 +1,6 @@
 # cquarry-plugins Roadmap
 
-What's done, what's next. Updated as of v0.2.0.
+What's done, what's next. Updated as of v0.3.0.
 
 The lane this repository serves is Phase 21 of CalibreQuarry's roadmap (the
 CQ plugin system lane). The host ships first; these plugins prove it. Ship
@@ -52,13 +52,28 @@ order: extract_isbn, then find_duplicates, then quality_check.
 
 ## Phase 2: the find_duplicates port
 
-- [ ] The matcher ladder per field (Identical, Similar, Soundex with the
+- [x] The matcher ladder per field (Identical, Similar, Soundex with the
       adjustable length, Fuzzy, Ignore), Binary Compare, Identifier compare.
-- [ ] Groups and the report surface (CSV/JSON + id lists); the cross-library
-      mode.
-- [ ] Exemptions (per-library, host config storage) and the option surface.
+      *(Shipped 0.3.0: find_duplicates/plugin.py, the single-file port with
+      upstream's attribution; the ladder regexes, strip lists, reversal
+      hashes, and the soundex port carried verbatim; the recorded
+      substitutions: the NFKD-strip for calibre's get_udc() and the sha
+      cache in the plugin config instead of the library database.)*
+- [x] Groups and the report surface (JSON in upstream's export shape plus
+      the text report, the recorded replacement for the GUI's
+      marked:duplicates highlighting); the cross-library mode
+      (`search --against PATH`, report-only, no exemptions, upstream's
+      rule). *(Shipped 0.3.0; the grouping pipeline runs the upstream
+      partition verbatim including the don't-repartition subtlety.)*
+- [x] Exemptions (per-library, host config storage) and the option surface.
+      *(Shipped 0.3.0: `exempt --books/--authors` records upstream's
+      bookExemptions/authorExemptions schema per library in the plugin's
+      config dir (contract 2), keyed by the absolute library path -- the
+      recorded storage substitution, the GUI plugin's and this plugin's
+      exemption sets independent; `--list/--remove/--clear` manage them.)*
 - [ ] The actions behind the host's gates: merge, binary-duplicate format
-      removal, row deletion, bulk metadata rename.
+      removal, row deletion, bulk metadata rename, and the variations
+      reports (whose tags-soundex length correction rides along).
 
 ## Phase 3: the quality_check port
 
