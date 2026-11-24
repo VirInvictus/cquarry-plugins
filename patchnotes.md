@@ -2,6 +2,23 @@
 
 # Patchnotes
 
+## v0.5.1
+
+ERRATUM for v0.5.0, found by the dogfood drill the moment the package
+loaded outside its repository root: the package's imports were ABSOLUTE
+(`from quality_check import ...`), which only resolve when the repo root
+happens to be on sys.path -- everywhere else the battery died with
+ModuleNotFoundError before the first check ran. The imports are relative
+(`from . import checks_db, checks_epub`) -- the layout the host
+3.96.0 package loader's submodule_search_locations exists to support,
+and exactly the multi-file shape the fixture plugin's test pins. No
+other code moved. The dogfood drill after the fix: the verify/approve
+gate passed, the missing-family battery flagged the scratch's blank
+fields, the corrupt-placeholder file tripped corrupt_zip honestly, the
+swap-fix dry plan named the swap, and search-epub's does-not-contain
+ran clean.
+# Patchnotes
+
 ## v0.5.0
 
 The quality_check port lands (Phase 3): the battery as a multi-file

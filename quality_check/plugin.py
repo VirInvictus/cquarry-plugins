@@ -32,8 +32,8 @@ import zipfile
 from collections import defaultdict
 from pathlib import Path
 
-from quality_check import checks_db, checks_epub
-from quality_check.checks_db import MISSING_SEARCHES, DEFAULT_MAX_TAGS
+from . import checks_db, checks_epub
+from .checks_db import MISSING_SEARCHES, DEFAULT_MAX_TAGS
 
 #: The ePub battery: check_key -> evaluate(epub_book) -> bool|None.
 EPUB_CHECKS = {

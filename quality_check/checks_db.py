@@ -20,8 +20,8 @@ import re
 import struct
 from pathlib import Path
 
-from quality_check.mobi_exth import NotMobiError, get_exth_field
-from quality_check.titlecase import titlecase as _titlecase
+from .mobi_exth import NotMobiError, get_exth_field
+from .titlecase import titlecase as _titlecase
 
 DEFAULT_MAX_TAGS = 5
 RE_HTML_CLOSING = re.compile(
@@ -424,7 +424,7 @@ def _mobi_check(db, book_id, predicate) -> bool:
 
 
 def _read_exth_map(path):
-    from quality_check.mobi_exth import read_exth
+    from .mobi_exth import read_exth
 
     return read_exth(path)
 
