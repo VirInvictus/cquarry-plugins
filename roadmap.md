@@ -17,9 +17,10 @@ order: extract_isbn, then find_duplicates, then quality_check.
 - [x] CI (house-hardened shape: SHA-pinned actions, permissions, concurrency,
       timeout, pinned ruff).
 - [x] `docs/upstream-sync.md` seeded with the clone window.
-- [ ] `docs/crosswalk.md`: the parity ledger over the three upstream surfaces
-      (opened 2026-11-23; the enumeration wave is the CalibreQuarry lane's
-      pre-work).
+- [x] `docs/crosswalk.md`: the parity ledger over the three upstream surfaces
+      (every check, matcher, option, and fix disposed as ported / substituted
+      / extension / declined with its CLI twin named; the enumeration wave ran
+      2026-11-23 over the e14a679 clone).
 
 ## Phase 1: the extract_isbn port
 
