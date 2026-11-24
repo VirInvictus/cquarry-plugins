@@ -2,6 +2,20 @@
 
 # Patchnotes
 
+## v0.4.1
+
+ERRATUM for v0.4.0, whose CI ran red after the tag: the merge verb's
+fill/union fields plan through seven WriteGate methods
+(plan_set_authors, plan_add_tags, plan_set_languages, plan_set_rating,
+plan_set_pubdate, plan_set_publisher, plan_set_comments) that were
+written but left UNCOMMITTED in the host repo when v0.4.0 shipped, so
+every merge test failed on the released host (`plan_set_authors`
+missing). The host shipped them as calibrequarry 3.95.3; this release
+changes exactly one thing: the manifest floor moves to
+`calibrequarry >= 3.95.3`, so the version gates refuse v0.4.0's broken
+dependency window the honest way. No other code moved.
+# Patchnotes
+
 ## v0.4.0
 
 The find_duplicates actions land (Phase 2's actions half, contract 3):
