@@ -21,6 +21,10 @@ per-book report (identical stored / missing stored / none found).
 
 ## Status
 
-Skeleton. The manifest (`cquarry-plugin.toml`) is the live contract; the
-Phase 1 port lands the implementation. The parity ledger row lives in
-`docs/crosswalk.md` at the repository root.
+Implemented (Phase 1). One verb: `cquarry plugin run extract_isbn scan
+[--ids ID,...] [--search QUERY] [--prefixes 977,978,979]`, dry-run by
+default (the report is the prompt; the changed-ids line is pipe-ready) and
+`--apply` writes through the host's WriteGate. Supported scanning: EPUB
+(spine windows), PDF (page windows via poppler), and TXT; other formats
+report the recorded deferral (the EbookIterator substitution class). The
+parity ledger rows live in `docs/crosswalk.md` at the repository root.

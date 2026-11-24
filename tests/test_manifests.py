@@ -16,7 +16,7 @@ DERIVATIONS = {"port", "clean-room", "original"}
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
 FLOOR_RE = re.compile(r"^>=\d+(\.\d+){0,2}$")
 ENTRY_RE = re.compile(
-    r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+:[A-Za-z_][A-Za-z0-9_]*$"
+    r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*:[A-Za-z_][A-Za-z0-9_]*$"
 )
 UPSTREAM_SOURCE = "https://github.com/kiwidude68/calibre_plugins"
 

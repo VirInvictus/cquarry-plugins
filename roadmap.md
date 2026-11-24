@@ -1,6 +1,6 @@
 # cquarry-plugins Roadmap
 
-What's done, what's next. Updated as of v0.1.0.
+What's done, what's next. Updated as of v0.2.0.
 
 The lane this repository serves is Phase 21 of CalibreQuarry's roadmap (the
 CQ plugin system lane). The host ships first; these plugins prove it. Ship
@@ -24,17 +24,31 @@ order: extract_isbn, then find_duplicates, then quality_check.
 
 ## Phase 1: the extract_isbn port
 
-- [ ] The 1:1 scan contract: format preference order, first-hit-stops, PDF
+- [x] The 1:1 scan contract: format preference order, first-hit-stops, PDF
       windows (first 10 pages, then last 5 in reverse), other-format file
       order (leading, trailing reversed, the rest), markup skipping, prefix
       validation with the extensible extension list, the three failure
-      classes (identical / missing / none found).
-- [ ] The write adoption surface: upstream's prompt-to-apply mapped to the
+      classes (identical / missing / none found). *(Shipped 0.2.0:
+      extract_isbn/plugin.py, the single-file port with upstream's
+      attribution carried; the recorded substitutions per the crosswalk:
+      stdlib spine parsing for the EbookIterator, pdftotext + pdfinfo for
+      pdftohtml + podofo, and the EbookIterator-only formats (mobi/azw3)
+      report the deferral instead of scanning.)*
+- [x] The write adoption surface: upstream's prompt-to-apply mapped to the
       host's dry-run/apply rails; per-book found / skip-identical /
-      skip-conflict / write lines; changed-book ids pipe-ready.
-- [ ] Behavior tests per the host's conventions; the host's end-to-end
+      skip-conflict / write lines; changed-book ids pipe-ready. *(Shipped
+      0.2.0: the scan verb; a stored DIFFERENT isbn is the reviewer-visible
+      CONFLICT class, never auto-overwritten, the host's recorded policy;
+      --apply rides the WriteGate, whose label-pair fix raised this
+      plugin's calibrequarry floor to >=3.94.1.)*
+- [x] Behavior tests per the host's conventions; the host's end-to-end
       approval drill (verify, approve, dry run, apply, re-hash refusal) is
-      the deliverable this port proves.
+      the deliverable this port proves. *(Shipped 0.2.0:
+      tests/test_extract_isbn.py's 26 tests: scanner units, the spine and
+      PDF windows (mocked plus real poppler over crafted 20-page PDFs),
+      the scratch-library verb end to end (conflict / same / write /
+      no-format classes; the dry run writes nothing and --apply reads
+      back), and the host verify pass with the manifest probe.)*
 
 ## Phase 2: the find_duplicates port
 

@@ -27,6 +27,7 @@ jobs:
       - run: pip install ruff==0.15.20
       - run: ruff check extract_isbn find_duplicates quality_check tests
       - run: ruff format --check extract_isbn find_duplicates quality_check tests
+      # The plugin ports import the host's public APIs: install the pair.
+      - run: pip install git+https://github.com/VirInvictus/cquarry.git@main
+      - run: pip install git+https://github.com/VirInvictus/CalibreQuarry.git@main
       - run: python -m unittest discover -s tests
-      # The plugin ports import the host's public APIs; when Phase 1 lands,
-      # install cquarry + calibrequarry here before the suite step.
