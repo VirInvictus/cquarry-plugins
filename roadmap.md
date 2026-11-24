@@ -88,12 +88,27 @@ order: extract_isbn, then find_duplicates, then quality_check.
 
 ## Phase 3: the quality_check port
 
-- [ ] The check families: cover size/dimensions; ePub structure; ePub style;
+- [x] The check families: cover size/dimensions; ePub structure; ePub style;
       MOBI/AZW (EBOK cdetype, ASIN, EXTH sharing, clipping); metadata
-      quality; per-check exclusions.
-- [ ] The saved-regex ePub content search (part of the port; parity is the
-      directive).
-- [ ] The fixes behind the host's gates: author swap/reorder, initials
+      quality; per-check exclusions. *(Shipped 0.5.0 as a multi-file package
+      riding host 3.96.0's package loader: the metadata/missing/covers/MOBI
+      families in checks_db.py, the ePub structure/style battery in
+      checks_epub.py, the EXTH reader in mobi_exth.py, titlecase ported
+      separately with attribution. Deferred with recorded reasons: the
+      stored-size repair's fix verb (the host seam exists since 3.95.1;
+      wired in the v0.6.0 fix batch) and the MOBI ASIN/cdetype repair
+      (needs a MOBI writer). The css_margins prefs comparison is the
+      recorded substitution: flag-only for now.)*
+- [x] The saved-regex ePub content search (part of the port; parity is the
+      directive). *(Shipped 0.5.0 as the search-epub verb: upstream's
+      scopes (html/plaintext/css/opf/ncx/zip), ignore-case, all-matches,
+      and the does-not-contain flag.)*
+- [x] The fixes behind the host's gates: author swap/reorder, initials
       format, ascii rename, stored-size repair, MOBI ASIN/cdetype repair.
       The save-to-disk orphan cleanup stays declined on upstream's own
-      warning.
+      warning. *(Partially shipped 0.5.0: author swap, initials format,
+      ascii rename, author/title sort recomputation -- all through the
+      WriteGate. Deferred to the v0.6.0 fix batch with recorded reasons:
+      stored-size repair (seam exists, verb pending) and the MOBI
+      ASIN/cdetype repair (needs a stdlib MOBI writer). The save-to-disk
+      cleanup stays declined.)*

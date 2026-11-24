@@ -2,6 +2,37 @@
 
 # Patchnotes
 
+## v0.5.0
+
+The quality_check port lands (Phase 3): the battery as a multi-file
+package riding host 3.96.0's package loader (api_version 3, floor
+calibrequarry >= 3.96.1). Check families: metadata quality (sorts via
+the engine's own helpers, ISBN checksums ported from calibre's
+check_isbn, duplicate ISBN/series, series gaps and ordering, excess
+tags, HTML-in-comments with upstream's comma bug as the recorded
+correction, the author-format family with the NFKD-strip substitution,
+title case via the ported titlecase), the 11 missing-data saved searches
+carried verbatim, covers (size/dimensions/aspect via a stdlib
+PNG-IHDR/JPEG-SOF parser -- the recorded PIL substitution), MOBI/AZW
+(EBOK cdetype, ASIN, sharing, clipping via a minimal EXTH reader; Topaz
+rejected like upstream), and the ePub structure/style battery (DRM,
+containers, namespaces, manifest consistency both directions, unused
+assets, broken links, cruft files, oversized HTML, TOC and guide checks,
+covers, conversion markers, style patterns). The saved-regex content
+search carries upstream's scopes (html/plaintext/css/opf/ncx/zip),
+ignore-case, all-matches, and the does-not-contain flag. Fixes behind
+the gates: author swap/reorder, initials format (the four modes),
+ascii rename, author/title sort recomputation. Deferred with recorded
+reasons: MOBI ASIN/cdetype repair (needs a MOBI writer), stored-size
+repair (rides host 3.95.1's refresh seam, wired in v0.6.0's fix batch),
+the save-to-disk orphan cleanup (declined on upstream's own warning),
+and the css_margins prefs comparison (flag-only for now). The check
+verb's error handling is honest: a raising check lands in a visible
+check-errors section instead of vanishing (found live: the first
+check_isbn port imported from plugin.py circularly and silently
+vanished behind the battery's exception handler).
+# Patchnotes
+
 ## v0.4.2
 
 CARRIERS: v0.4.1 shipped with the root VERSION still reading 0.4.0 (the
