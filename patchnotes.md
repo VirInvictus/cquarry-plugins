@@ -2,6 +2,28 @@
 
 # Patchnotes
 
+## v0.4.0
+
+The find_duplicates actions land (Phase 2's actions half, contract 3):
+`merge --keeper ID --ids ID,ID [--fields ...]` carries calibre's merge
+behind the gates -- formats copied into the keeper's directory and
+registered (a format the keeper already carries stays), the chosen
+fields fill/union into the keeper (a conflicting identifier is
+reviewer-visible and never overwritten), and the absorbed rows are
+removed in the same one-batch transaction; the plan prints in BOTH modes
+(the plan is the record under --apply too, so a CONFLICT line is never
+invisible), and the file copies happen outside the batch. The engine's
+author re-lay renames the keeper's files after the authors change; the
+tests resolve format paths through the engine for exactly that reason.
+`remove-duplicate-formats --ids` keeps the earliest-mtime copy of each
+byte-identical format; `delete --ids` is upstream's Delete key; the
+`variations` report (authors/series/publishers/tags clusters per
+matcher) supplies `rename --kind --from --to`. All actions are dry-run
+by default, plan through the contract-3 plan seam, and execute through
+the WriteGate's action seams (host >=3.95.2). Manifest: find_duplicates
+0.4.0, api_version 3.
+# Patchnotes
+
 ## v0.3.0
 
 The find_duplicates port lands (Phase 2, the read half): the matcher

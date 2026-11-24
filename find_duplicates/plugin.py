@@ -38,6 +38,7 @@ import argparse
 import hashlib
 import json
 import re
+import shutil
 import sys
 import unicodedata
 from collections import defaultdict
@@ -875,5 +876,366 @@ def exempt(context, argv: list[str]) -> int:
     return 0
 
 
+# ----------------------------------------------------------------- actions
+
+MERGEABLE_FIELDS = (
+    "authors",
+    "tags",
+    "languages",
+    "identifiers",
+    "rating",
+    "pubdate",
+    "publisher",
+    "comments",
+)
+#: calibre's merge keeps the keeper's title and series by default; the
+#: ported default field set is everything else, fill-blanks plus unions.
+
+
+def _book_row(db, book_id):
+    return db.get_book(book_id, include_comments=True)
+
+
+def _plan_merge(context, keeper, sources, fields):
+    """The merge plan: (actions, plan_lines, file_copies).
+
+    File copies happen outside the batch (files are not transactional);
+    the actions cover the row-level mutations in one transaction."""
+    db = context.db
+    keeper_row = _book_row(db, keeper)
+    keeper_formats = set(db.get_formats(keeper).keys())
+    root = Path(context.db_path).parent
+    keeper_dir = root / keeper_row["path"]
+    actions: list = []
+    lines: list[str] = [
+        f"merge: keeper #{keeper} {keeper_row['title']!r}; "
+        f"sources: {', '.join('#' + str(s) for s in sources)}"
+    ]
+    copies: list[tuple[Path, Path]] = []
+    for source in sources:
+        source_row = _book_row(db, source)
+        if source_row is None:
+            lines.append(f"  #{source}: MISSING BOOK, skipped")
+            continue
+        lines.append(f"  source #{source} {source_row['title']!r}:")
+        source_formats = db.get_formats(source)
+        for fmt, detail in source_formats.items():
+            if fmt in keeper_formats:
+                lines.append(f"    {fmt}: keeper already carries it, format stays")
+                continue
+            src_path = Path(detail["path"])
+            if not src_path.exists():
+                lines.append(f"    {fmt}: FILE MISSING ({src_path}), skipped")
+                continue
+            stem = f"merge{source}"
+            size = src_path.stat().st_size
+            dest = keeper_dir / f"{stem}.{fmt.lower()}"
+            counter = 2
+            while dest.exists():
+                dest = keeper_dir / f"{stem}-{counter}.{fmt.lower()}"
+                counter += 1
+            copies.append((src_path, dest))
+            actions.append(context.plan.plan_add_format(keeper, fmt, dest.stem, size))
+            lines.append(
+                f"    {fmt}: copy {src_path.name} -> {dest.name} "
+                f"({size} bytes), register on keeper"
+            )
+            keeper_formats.add(fmt)
+        for field in fields:
+            keeper_value = keeper_row.get(field)
+            source_value = source_row.get(field)
+            if field in ("authors", "tags", "languages"):
+                merged = list(
+                    dict.fromkeys((keeper_value or []) + (source_value or []))
+                )
+                if merged != (keeper_value or []):
+                    actions.append(_field_action(context, keeper, field, merged))
+                    lines.append(f"    {field}: union -> {merged}")
+            elif field == "identifiers":
+                keep_ids = db.get_identifiers(keeper)
+                src_ids = db.get_identifiers(source)
+                for id_type, value in src_ids.items():
+                    if id_type not in keep_ids:
+                        actions.append(
+                            context.plan.plan_identifier(keeper, id_type, value)
+                        )
+                        lines.append(f"    identifier {id_type}: adopt {value}")
+                    elif keep_ids[id_type] != value:
+                        lines.append(
+                            f"    identifier {id_type}: CONFLICT "
+                            f"({keep_ids[id_type]} vs {value}), keeper wins"
+                        )
+            elif not keeper_value and source_value:
+                actions.append(_field_action(context, keeper, field, source_value))
+                lines.append(f"    {field}: fill from source -> {source_value!r}")
+        actions.append(context.plan.plan_remove_book(source))
+        lines.append(f"    row: remove #{source} (the merge absorbs it)")
+    return actions, lines, copies
+
+
+def _field_action(context, book_id, field, value):
+    """The writeops action for one mergeable field (the fill/union shape)."""
+    import sys as _sys
+
+    w = context.plan
+    if field == "authors":
+        return w.plan_set_authors(book_id, value)
+    if field == "tags":
+        return w.plan_add_tags(book_id, value)
+    if field == "languages":
+        return w.plan_set_languages(book_id, value)
+    if field == "rating":
+        return w.plan_set_rating(book_id, value)
+    if field == "pubdate":
+        return w.plan_set_pubdate(book_id, value)
+    if field == "publisher":
+        return w.plan_set_publisher(book_id, value)
+    if field == "comments":
+        return w.plan_set_comments(book_id, value)
+    print(f"ERROR: field {field!r} is not mergeable", file=_sys.stderr)
+    raise SystemExit(2)
+
+
+def merge(context, argv: list[str]) -> int:
+    """Calibre's merge behind the gates: formats move (files copied),
+    chosen fields fill/union into the keeper, absorbed rows are removed.
+    One transaction for the row mutations; the dry run is the prompt."""
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="find_duplicates merge")
+    parser.add_argument("--keeper", type=int, required=True)
+    parser.add_argument("--ids", required=True, help="the absorbed book id(s)")
+    parser.add_argument("--fields", default=",".join(MERGEABLE_FIELDS))
+    args, _unknown = parser.parse_known_args(argv)
+    fields = [f.strip() for f in args.fields.split(",") if f.strip()]
+    sources = [s for s in _parse_ids(args.ids) if s != args.keeper]
+    if not sources:
+        print(
+            "ERROR: merge needs at least one source id (different from --keeper)",
+            file=sys.stderr,
+        )
+        return 2
+    actions, lines, copies = _plan_merge(context, args.keeper, sources, fields)
+    lines.insert(
+        0,
+        "DRY RUN: merge plan (--apply executes)"
+        if not context.can_write
+        else "merge plan:",
+    )
+    for line in lines:
+        print(line)
+    if not context.can_write:
+        print(f"plan: {len(actions)} action(s) in one transaction")
+        return 0
+    for src, dest in copies:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(src, dest)
+    code = context.write.apply(context.db_path, actions)
+    print(
+        f"merged {len(sources)} source book(s) into #{args.keeper}: "
+        f"{len(actions)} action(s), {len(copies)} file copy(ies)"
+    )
+    return code
+
+
+def remove_duplicate_formats(context, argv: list[str]) -> int:
+    """Upstream's binary auto-removal: within the id set, keep the
+    earliest-mtime copy of each byte-identical format, remove the rest."""
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="find_duplicates remove-duplicate-formats")
+    parser.add_argument("--ids", required=True)
+    parser.add_argument("--format", default=None, help="restrict to one format")
+    args, _unknown = parser.parse_known_args(argv)
+    ids = _parse_ids(args.ids)
+    entries: list[tuple[int, str, Path, float]] = []
+    for book_id in ids:
+        for fmt, path in _formats_of(context, book_id).items():
+            if args.format and fmt != args.format:
+                continue
+            try:
+                entries.append((book_id, fmt, path, path.stat().st_mtime))
+            except OSError:
+                continue
+    by_sha: dict = defaultdict(list)
+    for book_id, fmt, path, mtime in entries:
+        by_sha[_sha_of(path)].append((mtime, book_id, fmt, path))
+    actions: list = []
+    lines: list[str] = []
+    for sha, group in by_sha.items():
+        if len(group) < 2:
+            continue
+        group.sort()
+        keep_mtime, keep_book, keep_fmt, _keep_path = group[0]
+        for mtime, book_id, fmt, path in group[1:]:
+            actions.append(context.plan.plan_remove_format(book_id, fmt))
+            lines.append(
+                f"  {fmt} of #{book_id} ({path.name}, {datetime.fromtimestamp(mtime).date()})"
+                f" duplicates #{keep_book}'s ({sha[:12]}); remove"
+            )
+    if not lines:
+        print("no byte-identical format duplicates in the id set")
+        return 0
+    if not context.can_write:
+        print("DRY RUN: duplicate-format removal plan (--apply executes)")
+        for line in lines:
+            print(line)
+        print(f"plan: {len(actions)} format removal(s)")
+        return 0
+    code = context.write.apply(context.db_path, actions)
+    print(f"removed {len(actions)} duplicate format(s)")
+    return code
+
+
+def delete_books(context, argv: list[str]) -> int:
+    """Upstream's Delete key behind the gates: remove the named rows."""
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="find_duplicates delete")
+    parser.add_argument("--ids", required=True)
+    args, _unknown = parser.parse_known_args(argv)
+    ids = _parse_ids(args.ids)
+    if not ids:
+        print("ERROR: delete needs --ids", file=sys.stderr)
+        return 2
+    db = context.db
+    actions = []
+    lines = []
+    for book_id in ids:
+        book = _book_row(db, book_id)
+        title = book["title"] if book else "<unknown>"
+        actions.append(context.plan.plan_remove_book(book_id))
+        lines.append(f"  #{book_id} {title!r}: remove")
+    if not context.can_write:
+        print("DRY RUN: deletion plan (--apply executes)")
+        for line in lines:
+            print(line)
+        print(f"plan: {len(actions)} book removal(s)")
+        return 0
+    code = context.write.apply(context.db_path, actions)
+    print(f"removed {len(ids)} book(s)")
+    return code
+
+
+# ------------------------------------------------------------- variations
+
+VARIATION_ITEMS = ("authors", "series", "publishers", "tags")
+
+
+def _unique_names(db, item):
+    """Upstream's variation source: the unique names of one field."""
+    column = {
+        "authors": "authors",
+        "series": "series",
+        "publishers": "publisher",
+        "tags": "tags",
+    }[item]
+    names: set = set()
+    for book_id in db.all_ids():
+        book = db.get_book(book_id, include_comments=False)
+        value = book.get(column)
+        if isinstance(value, list):
+            names.update(value)
+        elif value:
+            names.add(value)
+    return sorted(names)
+
+
+def _variation_hash(name, item, match):
+    if match == "similar":
+        fns = {
+            "authors": similar_authors_match,
+            "series": lambda s: (_fuzzy_it(s), None),
+            "publishers": lambda s: (_fuzzy_it(s), None),
+            "tags": lambda s: (_fuzzy_it(s), None),
+        }
+        if item == "authors":
+            return similar_authors_match(name)[0]
+        return fns[item](name)[0]
+    if match == "soundex":
+        length = DEFAULT_TAGS_SOUNDEX if item == "tags" else DEFAULT_TITLE_SOUNDEX
+        source = name
+        if item == "authors":
+            tokens = list(_get_author_tokens(name))
+            source = (tokens[-1] + "".join(tokens[:-1])) if tokens else ""
+        return _soundex(_fuzzy_it(source), length)
+    # fuzzy
+    if item == "authors":
+        return fuzzy_authors_match(name)[0]
+    tokens = list(_get_title_tokens(name))
+    return tokens[0] if tokens else ""
+
+
+def variations(context, argv: list[str]) -> int:
+    """Upstream's variation report: clusters of one field's names that the
+    chosen matcher considers the same (the rename verb's supply)."""
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="find_duplicates variations")
+    parser.add_argument("--item", default="authors", choices=VARIATION_ITEMS)
+    parser.add_argument(
+        "--match", default="similar", choices=("similar", "soundex", "fuzzy")
+    )
+    parser.add_argument("--format", default=None)
+    args, _unknown = parser.parse_known_args(argv)
+    db = context.db
+    names = _unique_names(db, args.item)
+    clusters: dict = defaultdict(set)
+    for name in names:
+        clusters[_variation_hash(name, args.item, args.match)].add(name)
+    _shrink(clusters)
+    import json as _json
+
+    if args.format == "json":
+        print(
+            _json.dumps(
+                {
+                    "item": args.item,
+                    "match": args.match,
+                    "clusters": [sorted(c) for c in clusters.values()],
+                },
+                indent=1,
+                sort_keys=True,
+            )
+        )
+        return 0
+    if not clusters:
+        print(f"no {args.item} variations under {args.match}")
+        return 0
+    print(f"variations: {args.item} under {args.match}")
+    for i, (key, cluster) in enumerate(sorted(clusters.items()), 1):
+        print(f"  cluster {i}: {' | '.join(sorted(cluster))}")
+    print(f"summary: {len(clusters)} cluster(s) over {len(names)} name(s)")
+    return 0
+
+
+def rename(context, argv: list[str]) -> int:
+    """The entity rename behind the gate (the variations report's action)."""
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="find_duplicates rename")
+    parser.add_argument(
+        "--kind", default="authors", choices=("authors", "series", "publishers", "tags")
+    )
+    parser.add_argument("--from", dest="from_name", required=True)
+    parser.add_argument("--to", dest="to_name", required=True)
+    args, _unknown = parser.parse_known_args(argv)
+    action = context.plan.plan_rename_entity(args.kind, args.from_name, args.to_name)
+    if not context.can_write:
+        print("DRY RUN:", action[0])
+        return 0
+    code = context.write.apply(context.db_path, [action])
+    print(f"renamed {args.kind} {args.from_name!r} -> {args.to_name!r}")
+    return code
+
+
 def register(context):
-    return {"search": search, "exempt": exempt}
+    return {
+        "search": search,
+        "exempt": exempt,
+        "merge": merge,
+        "remove-duplicate-formats": remove_duplicate_formats,
+        "delete": delete_books,
+        "variations": variations,
+        "rename": rename,
+    }

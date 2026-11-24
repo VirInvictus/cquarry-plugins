@@ -6,8 +6,8 @@
 
 schema = 1
 name = "find_duplicates"
-version = "0.3.0"
-api_version = 2
+version = "0.4.0"
+api_version = 3
 license = "GPL-3.0-only"
 capabilities = ["read", "write"]
 entry = "plugin:register"
@@ -15,7 +15,7 @@ description = "Find duplicate books across the matcher ladder (identical/similar
 
 [requires]
 cquarry = ">=1.29.2"       # verified against the current engine release
-calibrequarry = ">=3.95.0" # contract 2 (the config seam)
+calibrequarry = ">=3.95.2" # contract 3 (the plan seam) + the action gates
 
 [upstream]
 source = "https://github.com/kiwidude68/calibre_plugins"
@@ -25,4 +25,4 @@ license = "GPL-3.0"
 derivation = "port"
 
 [verify]
-probes = ["search --type identifier", "exempt --list"]
+probes = ["search --type identifier", "exempt --list", "variations --item authors", "merge --keeper 1 --ids 2"]

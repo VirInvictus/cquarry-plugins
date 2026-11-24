@@ -25,13 +25,18 @@ uses the library database's namespaced preferences.
 
 ## Status
 
-Implemented (Phase 2, the read half). Verbs: `search` (the three search
+Implemented (Phase 2 complete). Read verbs: `search` (the three search
 types with the per-field matcher ladder carried verbatim; groups render
-as the report or `--format json` in upstream's export shape) and `exempt`
+as the report or `--format json` in upstream's export shape), `exempt`
 (--books/--authors record not-duplicate sets per library in this plugin's
-config, --list/--remove/--clear manage them). Cross-library comparison:
-`search --against /path/to/other/metadata.db` (report-only, no
-exemptions, upstream's rule). The actions half (merge, binary-format
-removal, row deletion, bulk rename, the variations reports) is the
-recorded Phase 2 actions box; its roadmap row tracks it. The parity
-ledger rows live in `docs/crosswalk.md`.
+config, --list/--remove/--clear manage them), `variations` (the field
+clusters per matcher), and cross-library comparison via `search --against
+/path/to/other/metadata.db` (report-only, no exemptions, upstream's
+rule). Action verbs, dry-run by default and `--apply` behind the host's
+gates: `merge --keeper ID --ids ID,ID [--fields ...]` (calibre's merge:
+formats copied into the keeper, chosen fields fill/union, absorbed rows
+removed; a conflicting identifier is reviewer-visible and never
+overwritten), `remove-duplicate-formats --ids` (keep the earliest-mtime
+copy of each byte-identical format), `delete --ids` (upstream's Delete
+key), and `rename --kind --from --to` (the entity rename behind the
+variations report). The parity ledger rows live in `docs/crosswalk.md`.

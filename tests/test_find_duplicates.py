@@ -368,7 +368,7 @@ class TestVerbs(unittest.TestCase):
         report, manifest, _digest = verify(PLUGIN_DIR)
         self.assertTrue(report.ok, report.lines)
         self.assertEqual(manifest.name, "find_duplicates")
-        self.assertEqual(manifest.api_version, 2)
+        self.assertEqual(manifest.api_version, 3)
         self.assertTrue(
             any(
                 "probe 'search --type identifier' exited 0" in line

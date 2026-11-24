@@ -1,6 +1,6 @@
 # cquarry-plugins Roadmap
 
-What's done, what's next. Updated as of v0.3.0.
+What's done, what's next. Updated as of v0.4.0.
 
 The lane this repository serves is Phase 21 of CalibreQuarry's roadmap (the
 CQ plugin system lane). The host ships first; these plugins prove it. Ship
@@ -71,9 +71,20 @@ order: extract_isbn, then find_duplicates, then quality_check.
       config dir (contract 2), keyed by the absolute library path -- the
       recorded storage substitution, the GUI plugin's and this plugin's
       exemption sets independent; `--list/--remove/--clear` manage them.)*
-- [ ] The actions behind the host's gates: merge, binary-duplicate format
+- [x] The actions behind the host's gates: merge, binary-duplicate format
       removal, row deletion, bulk metadata rename, and the variations
-      reports (whose tags-soundex length correction rides along).
+      reports (whose tags-soundex length correction rides along). *(Shipped
+      0.4.0 on host 3.95.1's action seams + 3.95.2's plan seam (contract 3):
+      merge copies the source formats into the keeper's directory and
+      registers them in the same one-batch transaction that fills/unions the
+      chosen fields and removes the absorbed rows -- the plan prints under
+      --apply too, so a CONFLICT identifier line is never invisible;
+      remove-duplicate-formats keeps the earliest-mtime copy per sha;
+      delete is upstream's Delete key; variations reports the field
+      clusters and rename rides cquarry's own rename_entity through the
+      gate. The tests drive every action over scratch libraries with REAL
+      format files and resolve keeper paths through the engine, because the
+      author re-lay renames the keeper's files after an authors change.)*
 
 ## Phase 3: the quality_check port
 
