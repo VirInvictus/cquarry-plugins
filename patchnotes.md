@@ -2,6 +2,18 @@
 
 # Patchnotes
 
+## v0.5.2
+
+TESTS: the quality_check suite's own `_load_plugin` helper never
+registered the loaded module in sys.modules before exec_module -- the
+harness's loader does exactly that, and a multi-file package's relative
+imports resolve their parent THROUGH sys.modules, so the suite failed
+to import wherever the harness's registration hadn't already primed
+the name. Registration added; suite 74 OK. (The single-file plugins'
+helpers never hit it: no relative imports, no parent lookup.)
+
+# Patchnotes
+
 ## v0.5.1
 
 ERRATUM for v0.5.0, found by the dogfood drill the moment the package

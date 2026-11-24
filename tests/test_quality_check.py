@@ -7,6 +7,7 @@ import importlib.util
 import io
 import shutil
 import sqlite3
+import sys
 import tempfile
 import unittest
 import zipfile
@@ -34,6 +35,9 @@ def _load_plugin():
         submodule_search_locations=[str(PLUGIN_DIR)],
     )
     module = importlib.util.module_from_spec(spec)
+    # register before exec: the package's relative imports resolve their
+    # parent through sys.modules (the harness's own registration pattern)
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 
